@@ -14,7 +14,7 @@ def amplitudeDistance(SP, Q):
     ad = 0
     n = len(SP)
     for i in range(n):
-        ad += (SP[i]-Q[i])*(SP[i]-Q[i])
+        ad += (SP[i].y-Q[i].y)*(SP[i].y-Q[i].y)
     return sqrt((1/n)*ad)
 
 def temporalDistance(SP,Q):
@@ -28,8 +28,8 @@ if __name__=='__main__':
     P = [2,3,5,6,10,12,15,14,12,9,8,6,4,7,10,13,16,12,10,5]
     Q = [2,5,10,15,12,9,6,7,10,13,16,12,10,5]
     Q2 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
-    SP = identification(P,Q)
+    SP, Q = identification(P,Q)
     print(similarity(SP,Q))
 
-    SP = identification(P,Q2)
+    SP, Q2 = identification(P,Q2)
     print(similarity(SP,Q2))
