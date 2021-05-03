@@ -31,6 +31,30 @@ def createHeadAndShoulders(n):
     startPoint = decrease(headAndShoulders, rest, startPoint, maxChange)
     return headAndShoulders
 
+def createDoubleTop(n):
+    assert n > 20
+    maxChange = 50/n
+    doubleTop = []
+    startPoint = uniform(10,20)
+    change = n//4
+    startPoint = increase(doubleTop, change, startPoint, maxChange)
+    startPoint = decrease(doubleTop, change, startPoint, maxChange)
+    startPoint = increase(doubleTop, change, startPoint, maxChange)
+    startPoint = decrease(doubleTop, change, startPoint, maxChange)
+    return doubleTop
+
+def createDoubleBottom(n):
+    assert n > 20
+    maxChange = 50/n
+    doubleBottom = []
+    startPoint = uniform(20,30)
+    change = n//4
+    startPoint = decrease(doubleBottom, change, startPoint, maxChange)
+    startPoint = increase(doubleBottom, change, startPoint, maxChange)
+    startPoint = decrease(doubleBottom, change, startPoint, maxChange)
+    startPoint = increase(doubleBottom, change, startPoint, maxChange)
+    return doubleBottom
+
 def increase(arr, n, startPoint, maxChange):
     for i in range(n):
         num = randint(1,100)
@@ -52,10 +76,15 @@ def decrease(arr, n, startPoint, maxChange):
             startPoint += incDec
         arr.append(startPoint)
     return startPoint
+
 if __name__=='__main__':
     has = createHeadAndShoulders(500)
     st = createSpikeTop(500)
+    dt = createDoubleTop(500)
+    bt = createDoubleBottom(500)
     plt.plot(has, label='headAndShoulders')
     plt.plot(st, label='spikeTop')
+    plt.plot(dt, label='doubleTop')
+    plt.plot(bt, label='doubleBottom')
     plt.legend()
     plt.show()

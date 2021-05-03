@@ -1,4 +1,6 @@
 from Identification import *
+from matplotlib import pyplot as plt
+from rulesets import *
 
 w1 = 0.5
 
@@ -7,8 +9,8 @@ w1 = 0.5
 
 def similarity(SP,Q):
     assert len(SP) == len(Q)
-    # return w1*amplitudeDistance(SP,Q) + (1-w1)*temporalDistance(SP,Q)
-    return amplitudeDistance(SP,Q)
+    return w1*amplitudeDistance(SP,Q) + (1-w1)*temporalDistance(SP,Q)
+    # return amplitudeDistance(SP,Q)
 
 def amplitudeDistance(SP, Q):
     ad = 0
@@ -25,8 +27,8 @@ def temporalDistance(SP,Q):
     return sqrt((1/(n-1))*td)
 
 if __name__=='__main__':
-    P = [2,3,5,6,10,12,15,14,12,9,8,6,4,7,10,13,16,12,10,5]
-    Q = [2,5,10,15,12,9,6,7,10,13,16,12,10,5]
+    P = createDoubleTop(500)
+    Q = createDoubleTop(100)
     Q2 = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
     SP, Q = identification(P,Q)
     print(similarity(SP,Q))

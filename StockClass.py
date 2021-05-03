@@ -16,7 +16,7 @@ class Stock:
 		self.label = []
 		self.pattern = []
 
-	def addNewStat(self, high, low, openPrice, closePrice, volume, date, label, pattern):
+	def addNewStat(self, high, low, openPrice, closePrice, volume, date, label=None, pattern=None):
 		self.high.append(high)
 		self.low.append(low)
 		self.open.append(openPrice)
@@ -70,3 +70,12 @@ class StockIndex(IntEnum):
 	def __int__(self):
 		return self.value
 
+class FormationCompare():
+	def __init__(self, formation, startPoint, endPoint, distance):
+		self.formation = formation
+		self.start = startPoint
+		self.end = endPoint
+		self.distance = distance
+
+	def __str__(self):
+		return 'formation: ' + str(self.formation) + ', start: ' + str(self.start) + ', end: ' + str(self.end) + ', distance: ' + str(self.distance)

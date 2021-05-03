@@ -1,10 +1,20 @@
 import csv
-from StockClass import Stock, StockIndex, epsilon, Label
+from StockClass import *
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 import numpy as np
 from Similarity import similarity
 from Identification import identification
+from rulesets import *
+import numpy as np
+from operator import attrgetter
+
+differentFormations = 	{
+						"Spike Top"				: createSpikeTop,
+						"Head and Shoulder" 	: createHeadAndShoulders,
+						"Double Top" 			: createDoubleTop, 
+						"Double Bottom" 		: createDoubleBottom
+						}
 
 def readFileAndFillDictionary(filename):
 	myBeautifulDictionary = {}
@@ -73,7 +83,13 @@ def splitDictionary(stockMarketDict):
 			descending2.addData(stockCloseData[i])
 	return doubleTop.data, doubleTop2.data, invHeAndSho.data
 
-import numpy as np
+def getDictionaryData(bigData, start, end):
+	data = []
+	assert start >= 0 and end < len(bigData)
+	for i in range(start, end):
+		data.append(bigData[i])
+	return data
+
 
 def levenshtein(seq1, seq2):
     size_x = len(seq1) + 1
@@ -103,16 +119,48 @@ def levenshtein(seq1, seq2):
 
 def main():
 	stockMarketDict = readFileAndFillDictionary('../datasets/CAC40/Veolia.csv')
-	print(stockMarketDict.keys())
-	sameOne, sameTwo, different = splitDictionary(stockMarketDict)
-	increaseDecrease(stockMarketDict)
-	print(len(sameOne), len(sameTwo), len(different))
-	sameTwoS, sameOne = identification(sameTwo, sameOne)
-	result = similarity(sameOne, sameTwoS)
-	print("same: ", result)
-	sameTwoS, different = identification(sameTwo, different)
-	result = similarity(different, sameTwoS)
-	print("different: ", result)
+	for stock in stockMarketDict:
+		stockData = stockMarketDict[stock].close
+		similarityList = []
+		for key in differentFormations:
+			formation = differentFormations[key](500)
+			w = 10
+			while w < len(stockData):
+				start = 0
+				while start < len(stockData)-w:
+					marketData = getDictionaryData(stockData, start, start+w)
+					if len(marketData) > len(formation):
+						marketDataS, formationS = identification(marketData, formation)
+					else:
+						formationS, marketDataS = identification(formation, marketData)
+					distance = similarity(marketDataS, formationS)
+					similarityList.append(FormationCompare(key, start, start+w, distance))
+					start += w
+				w += 1
+		similarityList.sort(key=attrgetter('distance'))
+		for item in similarityList:
+			print(item)
+		plt.plot(stockData, label=similarityList[0].formation)
+		plt.legend()
+		plt.show()
+
+
+	# stockMarketDict = readFileAndFillDictionary('../datasets/CAC40/Veolia.csv')
+	# print(stockMarketDict.keys())
+	# sameOne, sameTwo, different = splitDictionary(stockMarketDict)
+	# increaseDecrease(stockMarketDict)
+	# print(len(sameOne), len(sameTwo), len(different))
+	# sameTwoS, sameOne = identification(sameTwo, sameOne)
+	# result = similarity(sameOne, sameTwoS)
+	# print("same: ", result)
+	# sameTwoS, different = identification(sameTwo, different)
+	# result = similarity(different, sameTwoS)
+	# print("different: ", result)
+	# doubleTop = createDoubleTop(500)
+	# doubleTopS, sameOne3 = identification(doubleTop, sameOne)
+	# print(type(doubleTopS[0]), type(sameOne[0]))
+	# result = similarity(doubleTopS, sameOne)
+	# print("artificial: ", result)
 
 if __name__ == "__main__":
 	main()

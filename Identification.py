@@ -32,7 +32,7 @@ def identification(P, Q):
         SP[i] = point(adjPointList[i-1].index + 1, P[adjPointList[i-1].index])
     SQ = []
     for i in range(len(Q)):
-        SQ.append(point(i+1, Q[i]))
+        SQ.append(point(i+1, float(Q[i])))
     return SP, SQ
 
 def maxAdjPoints(P, n):
