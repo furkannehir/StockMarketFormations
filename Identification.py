@@ -3,14 +3,14 @@ from operator import attrgetter
 import numpy as np
 import editdistance as ed
 
-w1 = 0.6
-w2 = 0.2
-w3 = 0.2
+w1 = 0.3
+w2 = 0.3
+w3 = 0.4
 
 class point():
     def __init__(self, x, y):
-        self.x = x
-        self.y = y
+        self.x = int(x)
+        self.y = float(y)
 
 class adjPoint():
     def __init__(self, index, distance):
@@ -20,16 +20,21 @@ class adjPoint():
     def __str__(self):
         return 'index: ' + str(self.index) + ', distance: ' + str(self.distance)
 
-def identification(P, Q):
+def identification(P, Q): #marketdata P formation Q
     assert len(P) >= len(Q)
     m = len(P)
     n = len(Q)
-    SP = [None]*n
-    SP[0] = point(1, P[0])
-    SP[n-1] = point(m, P[-1])
-    adjPointList = maxAdjPoints(P, n) #Bunun yerine başka bir yol düşünülebilir
-    for i in range(1, n-1):
-        SP[i] = point(adjPointList[i-1].index + 1, P[adjPointList[i-1].index])
+    if m == n:
+        SP = []
+        for i in range(len(P)):
+            SP.append(point(i+1, float(P[i])))
+    else:
+        SP = [None]*n
+        SP[0] = point(1, P[0])
+        SP[n-1] = point(m, P[-1])
+        adjPointList = maxAdjPoints(P, n) #Bunun yerine başka bir yol düşünülebilir 
+        for i in range(1, n-1):
+            SP[i] = point(adjPointList[i-1].index + 1, float(P[adjPointList[i-1].index]))
     SQ = []
     for i in range(len(Q)):
         SQ.append(point(i+1, float(Q[i])))
@@ -42,13 +47,10 @@ def maxAdjPoints(P, n):
     p2 = point(len(P)-1, P[-1])
     for i in range(1, len(P)-2):
         p3 = point(i,P[i])
-        # distance = w1*editDistance(p3, p1, p2) + w2*perpendicularDistance(p3, p1, p2) + w3*verticalDistance(p3, p1, p2)
-        # distance = editDistance(p3, p1, p2)
-        distance = w1*perpendicularDistance(p3, p1, p2) + (1-w1)*editDistance(p3, p1, p2)
-        # distance = verticalDistance(p3, p1, p2)
+        distance = w1*editDistance(p3, p1, p2) + w2*perpendicularDistance(p3, p1, p2) + w3*verticalDistance(p3, p1, p2)
         adjPointList.append(adjPoint(i, distance))
     adjPointList.sort(key=attrgetter('distance'), reverse=True)
-    adjPointList = adjPointList[:n]
+    # adjPointList = adjPointList[:n]
     adjPointList.sort(key=attrgetter('index'))
     return adjPointList
 
@@ -56,16 +58,8 @@ def editDistance(p3, p1, p2):
     return sqrt((p2.x - p3.x)*(p2.x - p3.x) + (p2.y - p3.y)*(p2.y - p3.y)) + sqrt((p1.x - p3.x)*(p1.x - p3.x) + (p1.y - p3.y)*(p1.y - p3.y))
 
 def perpendicularDistance(p3, p1, p2):
-    # _, xc, yc = slopeXcYc(p1, p2, p3)
-    # print(xc)
-    # return sqrt((xc-p3.x)*(xc-p3.x) + (yc-p3.y)*(yc-p3.y))
-    p1 = (p1.x, p1.y)
-    p2 = (p2.x, p2.y)
-    p3 = (p3.x, p3.y)
-    p1 = np.asarray(p1)
-    p2 = np.asarray(p2)
-    p3 = np.asarray(p3)
-    return np.linalg.norm(np.cross(p2-p1, p1-p3))/np.linalg.norm(p2-p1)
+    _, xc, yc = slopeXcYc(p1, p2, p3)
+    return sqrt((xc-p3.x)*(xc-p3.x) + (yc-p3.y)*(yc-p3.y))
 
 def verticalDistance(p3, p1, p2):
     _, _, yc = slopeXcYc(p1, p2, p3)
@@ -86,8 +80,8 @@ def maxAdjPointsRec(P, n, counter, left, right, SP):
     p2 = point(right, P[right])
     for i in range(left, right):
         p3 = point(i,P[i])
-        # distance = w1*editDistance(p3, p1, p2) + w2*perpendicularDistance(p3, p1, p2) + w3*verticalDistance(p3, p1, p2)
-        distance = w1*editDistance(p3, p1, p2) + (1-w1)*verticalDistance(p3, p1, p2)
+        distance = w1*editDistance(p3, p1, p2) + w2*perpendicularDistance(p3, p1, p2) + w3*verticalDistance(p3, p1, p2)
+        # distance = w1*editDistance(p3, p1, p2) + (1-w1)*verticalDistance(p3, p1, p2)
         adjPointList.append(adjPoint(i, distance))
     adjPointList.sort(key=attrgetter('distance'), reverse=True)
     if adjPointList:

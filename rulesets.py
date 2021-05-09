@@ -1,22 +1,24 @@
 from random import uniform, randint
 import matplotlib.pyplot as plt
 
-def createSpikeTop(n):
-    assert n > 20
-    maxChange = 40/n
+def createSpikeTop(n, startPoint):
+    assert n >= 10
+    maxChange = 60/n
     spikeTop = []
-    spikePoint = randint(n//4, 3*n//4)
-    startPoint = uniform(10,20)
-    startPoint = increase(spikeTop, spikePoint, startPoint, maxChange)
-    spikeTop.append(startPoint*1.003)
-    decrease(spikeTop, n-spikePoint, startPoint, maxChange)
+    splits = n//4
+    # spikePoint = randint(n//3, 2*n//3)
+    # startPoint = uniform(20,30)
+    startPoint = steady(spikeTop, splits, startPoint, maxChange)
+    startPoint = increase(spikeTop, splits, startPoint, maxChange)
+    startPoint = decrease(spikeTop, splits, startPoint, maxChange)
+    steady(spikeTop, splits, startPoint, maxChange)
     return spikeTop
 
-def createHeadAndShoulders(n):
-    assert n > 20
+def createHeadAndShoulders(n, startPoint):
+    assert n >= 10
     maxChange = 40/n
     headAndShoulders = []
-    startPoint = uniform(10,20)
+    # startPoint = uniform(20,30)
     s1 = n//5
     b1 = n//10
     h = n//5
@@ -31,11 +33,11 @@ def createHeadAndShoulders(n):
     startPoint = decrease(headAndShoulders, rest, startPoint, maxChange)
     return headAndShoulders
 
-def createDoubleTop(n):
-    assert n > 20
+def createDoubleTop(n, startPoint):
+    assert n >= 10
     maxChange = 50/n
     doubleTop = []
-    startPoint = uniform(10,20)
+    # startPoint = uniform(20,30)
     change = n//4
     startPoint = increase(doubleTop, change, startPoint, maxChange)
     startPoint = decrease(doubleTop, change, startPoint, maxChange)
@@ -43,17 +45,33 @@ def createDoubleTop(n):
     startPoint = decrease(doubleTop, change, startPoint, maxChange)
     return doubleTop
 
-def createDoubleBottom(n):
-    assert n > 20
+def createDoubleBottom(n, startPoint):
+    assert n >= 10
     maxChange = 50/n
     doubleBottom = []
-    startPoint = uniform(20,30)
+    # startPoint = uniform(20,30)
     change = n//4
     startPoint = decrease(doubleBottom, change, startPoint, maxChange)
     startPoint = increase(doubleBottom, change, startPoint, maxChange)
     startPoint = decrease(doubleBottom, change, startPoint, maxChange)
     startPoint = increase(doubleBottom, change, startPoint, maxChange)
     return doubleBottom
+
+def createAscending(n, startPoint):
+    assert n >= 10
+    maxChange = 50/n
+    ascending = []
+    # startPoint = uniform(20,30)
+    increase(ascending, n, startPoint, maxChange)
+    return ascending
+
+def createDescending(n, startPoint):
+    assert n >= 10
+    maxChange = 50/n
+    descending = []
+    # startPoint = uniform(30,40)
+    decrease(descending, n, startPoint, maxChange)
+    return descending
 
 def increase(arr, n, startPoint, maxChange):
     for i in range(n):
@@ -77,14 +95,29 @@ def decrease(arr, n, startPoint, maxChange):
         arr.append(startPoint)
     return startPoint
 
+def steady(arr, n, startPoint, maxChange):
+    for i in range(n):
+        num = randint(1,100)
+        incDec = uniform(0,maxChange)
+        if num <= 50:
+            startPoint -= incDec
+        else:
+            startPoint += incDec
+        arr.append(startPoint)
+    return startPoint
+
 if __name__=='__main__':
-    has = createHeadAndShoulders(500)
-    st = createSpikeTop(500)
-    dt = createDoubleTop(500)
-    bt = createDoubleBottom(500)
+    has = createHeadAndShoulders(500,30)
+    st = createSpikeTop(500,30)
+    dt = createDoubleTop(500,30)
+    bt = createDoubleBottom(500,30)
+    asc = createAscending(500,30)
+    dsc = createDescending(500,30)
     plt.plot(has, label='headAndShoulders')
     plt.plot(st, label='spikeTop')
     plt.plot(dt, label='doubleTop')
     plt.plot(bt, label='doubleBottom')
+    # plt.plot(asc, label='ascending')
+    # plt.plot(dsc, label='descending')
     plt.legend()
     plt.show()

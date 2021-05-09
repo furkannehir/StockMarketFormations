@@ -4,13 +4,10 @@ from rulesets import *
 
 w1 = 0.5
 
-#TODO temporal distance
-#TODO point objects for temporal distance
-
 def similarity(SP,Q):
     assert len(SP) == len(Q)
-    return w1*amplitudeDistance(SP,Q) + (1-w1)*temporalDistance(SP,Q)
-    # return amplitudeDistance(SP,Q)
+    # return w1*amplitudeDistance(SP,Q) + (1-w1)*temporalDistance(SP,Q)
+    return amplitudeDistance(SP,Q)
 
 def amplitudeDistance(SP, Q):
     ad = 0
