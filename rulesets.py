@@ -1,24 +1,26 @@
 from random import uniform, randint
 import matplotlib.pyplot as plt
 
-def createSpikeTop(n, startPoint):
+def createSpikeTop(n, startPoint=None):
     assert n >= 10
     maxChange = 60/n
     spikeTop = []
     splits = n//4
     # spikePoint = randint(n//3, 2*n//3)
-    # startPoint = uniform(20,30)
+    if startPoint is None:
+        startPoint = uniform(20,30)
     startPoint = steady(spikeTop, splits, startPoint, maxChange)
     startPoint = increase(spikeTop, splits, startPoint, maxChange)
     startPoint = decrease(spikeTop, splits, startPoint, maxChange)
     steady(spikeTop, splits, startPoint, maxChange)
     return spikeTop
 
-def createHeadAndShoulders(n, startPoint):
+def createHeadAndShoulders(n, startPoint=None):
     assert n >= 10
     maxChange = 40/n
     headAndShoulders = []
-    # startPoint = uniform(20,30)
+    if startPoint is None:
+        startPoint = uniform(20,30)
     s1 = n//5
     b1 = n//10
     h = n//5
@@ -33,11 +35,12 @@ def createHeadAndShoulders(n, startPoint):
     startPoint = decrease(headAndShoulders, rest, startPoint, maxChange)
     return headAndShoulders
 
-def createDoubleTop(n, startPoint):
+def createDoubleTop(n, startPoint=None):
     assert n >= 10
     maxChange = 50/n
     doubleTop = []
-    # startPoint = uniform(20,30)
+    if startPoint is None:
+        startPoint = uniform(20,30)
     change = n//4
     startPoint = increase(doubleTop, change, startPoint, maxChange)
     startPoint = decrease(doubleTop, change, startPoint, maxChange)
@@ -45,11 +48,12 @@ def createDoubleTop(n, startPoint):
     startPoint = decrease(doubleTop, change, startPoint, maxChange)
     return doubleTop
 
-def createDoubleBottom(n, startPoint):
+def createDoubleBottom(n, startPoint=None):
     assert n >= 10
     maxChange = 50/n
     doubleBottom = []
-    # startPoint = uniform(20,30)
+    if startPoint is None:
+        startPoint = uniform(20,30)
     change = n//4
     startPoint = decrease(doubleBottom, change, startPoint, maxChange)
     startPoint = increase(doubleBottom, change, startPoint, maxChange)
@@ -57,19 +61,21 @@ def createDoubleBottom(n, startPoint):
     startPoint = increase(doubleBottom, change, startPoint, maxChange)
     return doubleBottom
 
-def createAscending(n, startPoint):
+def createAscending(n, startPoint=None):
     assert n >= 10
     maxChange = 50/n
     ascending = []
-    # startPoint = uniform(20,30)
+    if startPoint is None:
+        startPoint = uniform(20,30)
     increase(ascending, n, startPoint, maxChange)
     return ascending
 
-def createDescending(n, startPoint):
+def createDescending(n, startPoint=None):
     assert n >= 10
     maxChange = 50/n
     descending = []
-    # startPoint = uniform(30,40)
+    if startPoint is None:
+        startPoint = uniform(30,40)
     decrease(descending, n, startPoint, maxChange)
     return descending
 
@@ -105,6 +111,26 @@ def steady(arr, n, startPoint, maxChange):
             startPoint += incDec
         arr.append(startPoint)
     return startPoint
+
+formationList = 	{
+						"Spike Top"				: createSpikeTop,
+						"Head and Shoulder" 	: createHeadAndShoulders,
+						"Double Top" 			: createDoubleTop, 
+						"Double Bottom" 		: createDoubleBottom,
+						"Ascending"				: createAscending,
+						"Descending"			: createDescending
+}
+
+formationLabelNumber = {
+						"None"					: 1,
+						"Spike Top"				: 2,
+						"Head and Shoulder" 	: 3,
+						"Double Top" 			: 4, 
+						"Double Bottom" 		: 5,
+						"Ascending"				: 6,
+						"Descending"			: 7
+}
+
 
 if __name__=='__main__':
     has = createHeadAndShoulders(500,30)

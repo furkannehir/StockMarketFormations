@@ -71,8 +71,9 @@ class StockIndex(IntEnum):
 		return self.value
 
 class FormationCompare():
-	def __init__(self, formation, startPoint, endPoint, distance):
+	def __init__(self, formation, formationNo, startPoint, endPoint, distance):
 		self.formation = formation
+		self.formationNo = formationNo 
 		self.start = startPoint
 		self.end = endPoint
 		self.distance = distance

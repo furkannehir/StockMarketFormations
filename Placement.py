@@ -1,4 +1,6 @@
 
+from StockMarketFormations.rulesets import formationLabelNumber
+
 def greedyPlacementDistancePriority(stockMarketData, similarityList):
     labeledArray = [0]*len(stockMarketData.close)
     labeled = 0
@@ -7,8 +9,13 @@ def greedyPlacementDistancePriority(stockMarketData, similarityList):
             for i in range(item.start, item.end):
                 labeledArray[i] = 1
                 labeled += 1
-                stockMarketData.label[i] = item.formation
+                stockMarketData.label[i] = item.formationNo
+                stockMarketData.pattern[i] = item.formation
     print("Labeled %" + str((labeled/len(labeledArray))*100) + " of the data.")
+    for i in range(len(labeledArray)):
+        if labeledArray[i] == 0:
+            stockMarketData.label[i] = formationLabelNumber["None"]
+            stockMarketData.pattern[i] = "None"
     return stockMarketData
 
 def greedyPlacementPercentagePriority(stockMarketData, similarityList):
@@ -26,9 +33,14 @@ def greedyPlacementPercentagePriority(stockMarketData, similarityList):
         for i in range(similarityObj.start, similarityObj.end):
             labeledArray[i] = 1
             labeled += 1
-            stockMarketData.label[i] = similarityObj.formation
+            stockMarketData.label[i] = similarityObj.formationNo
+            stockMarketData.pattern[i] = similarityObj.formation
         start = similarityObj.end+1
     print("Labeled %" + str((labeled/len(labeledArray))*100) + " of the data.")
+    for i in range(len(labeledArray)):
+        if labeledArray[i] == 0:
+            stockMarketData.label[i] = formationLabelNumber["None"]
+            stockMarketData.pattern[i] = "None"
     return stockMarketData
                 
 

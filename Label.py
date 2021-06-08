@@ -1,29 +1,22 @@
 import csv
-from StockClass import *
+from StockMarketFormations.StockClass import *
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 import numpy as np
-from Similarity import similarity
-from Identification import identification
-from rulesets import *
+from StockMarketFormations.Similarity import similarity
+from StockMarketFormations.Identification import identification
+from StockMarketFormations.rulesets import *
 import numpy as np
 from operator import attrgetter
-from Placement import *
-
+from StockMarketFormations.Placement import *
+import pandas as pd
+import os
 
 #TODO similarity hesaplama
 #TODO identification
 #TODO formasyonun random olup olmaması
 #TODO label'leri dynamic programming ile yerleştirme
-
-formationList = 	{
-						"Spike Top"				: createSpikeTop,
-						"Head and Shoulder" 	: createHeadAndShoulders,
-						"Double Top" 			: createDoubleTop, 
-						"Double Bottom" 		: createDoubleBottom,
-						"Ascending"				: createAscending,
-						"Descending"			: createDescending
-						}
+#TODO excel'e kaydetme formasyonları
 
 def readFileAndFillDictionary(filename):
 	myBeautifulDictionary = {}
@@ -73,6 +66,76 @@ def levenshtein(seq1, seq2):
                     matrix[x,y-1] + 1
                 )
     return (matrix[size_x - 1, size_y - 1])
+
+def createDataFrameObj(stockMarketData):
+	dataFrameDict = {}
+	dataFrameDict['CompanyName'] = [stockMarketData.companyName]*len(stockMarketData.close)
+	dataFrameDict['StockName'] = [stockMarketData.stockName]*len(stockMarketData.close)
+	dataFrameDict['High'] = stockMarketData.high
+	dataFrameDict['Low'] = stockMarketData.low
+	dataFrameDict['Open'] = stockMarketData.open
+	dataFrameDict['Close'] = stockMarketData.close
+	dataFrameDict['Volume'] = stockMarketData.volume
+	dataFrameDict['Date'] = stockMarketData.date
+	dataFrameDict['Label'] = stockMarketData.label
+	dataFrameDict['Pattern'] = stockMarketData.pattern
+	dataFrameObj = pd.DataFrame(data=dataFrameDict)
+	print(dataFrameObj.columns)
+	return dataFrameObj
+
+def saveLabeledDataToCSV(stockMarketData, filename):
+	fileNamelList = filename.split('.')
+	labeledFileName = ''
+	for i in range(len(fileNamelList)-1):
+		labeledFileName += fileNamelList[i]
+	if os.path.exists(labeledFileName):
+	    os.remove(labeledFileName)
+	with open(filename.split('.')[0]+'_labeled.csv', 'w') as f:
+		writer = csv.writer(f)
+		writer.writerow(["CompanyName","StockName","High","Low","Open","Close","Volume","Date","Label","Pattern"])
+		for i in range(len(stockMarketData.close)):
+			writer.writerow([stockMarketData.companyName,
+							stockMarketData.stockName,
+							stockMarketData.high[i],
+							stockMarketData.low[i],
+							stockMarketData.open[i],
+							stockMarketData.close[i],
+							stockMarketData.volume[i],
+							stockMarketData.date[i],
+							stockMarketData.label[i],
+							stockMarketData.pattern[i]])
+
+def labelDataAsDataFrameObj(filename):
+	stockMarketDict = readFileAndFillDictionary(filename)
+	for stock in stockMarketDict:
+		stockMarketData = stockMarketDict[stock]
+		stockData = stockMarketData.close
+		similarityList = []
+		epoch = 0
+		for key in formationList:
+			w = 10
+			print('formation: ' + str(key))
+			epochFormation = 0
+			formation = formationList[key](200)
+			while w < len(stockData):
+				start = 0
+				if epoch%10 == 0:
+					print('epoch: ' + str(epoch) + ', epoch for this formation: ' + str(epochFormation) + ', window: ' + str(w))
+				while start < len(stockData)-w:
+					marketData = getDictionaryData(stockData, start, start+w)
+					if len(marketData) > len(formation):
+						marketDataS, formationS = identification(marketData, formation)
+					else:
+						formationS, marketDataS = identification(formation, marketData)
+					distance = similarity(marketDataS, formationS)
+					similarityList.append(FormationCompare(key, formationLabelNumber[key], start, start+w, distance))
+					start += 1
+				epoch += 1
+				w += 5
+		similarityList.sort(key=attrgetter('distance'))
+		stockMarketData = greedyPlacementDistancePriority(stockMarketData, similarityList)
+		saveLabeledDataToCSV(stockMarketData, filename)
+		return createDataFrameObj(stockMarketData)
 
 def main():
 	stockMarketDict = readFileAndFillDictionary('../datasets/CAC40/Veolia.csv')
