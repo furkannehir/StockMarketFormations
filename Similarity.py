@@ -1,6 +1,6 @@
-from StockMarketFormations.Identification import *
+from Identification import *
 from matplotlib import pyplot as plt
-from StockMarketFormations.rulesets import *
+from rulesets import *
 
 w1 = 0.5
 

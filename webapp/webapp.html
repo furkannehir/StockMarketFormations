@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="style.css">
+    <title>Stock Predict</title>
+  </head>
+  <body>
+    <div>
+      <h1>I like the animal: {{ some_str }}<h1>
+      <form method="POST" action="submit_form" enctype="multipart/form-data">
+        <div class="range-wrap">
+          <div style="text-align: center;">Split(%)</div>
+          <input type="range" name="split" class="range" value="80">
+          <output class="bubble"></output>
+        </div>
+        <div name=form style="margin-bottom: 5%;">
+          <input type="file" name="file">
+          <input type="checkbox" name="labeled" value="Labeled data">Labeled
+          <input type="checkbox" name="train" value="Train">Train
+        <select name="model" tabindex="1">
+          <option name="model" type="radio" id="lstm" checked>
+            <label for="lstm" class="option">LSTM</label>
+            <option name="model" type="radio" id="hmm">
+              <label for="hmm" class="option">HMM</label>
+            </select>
+          </div>
+        <div style="margin-left: 40%;">
+          <button class="button--secondary" type="submit" value="Submit">SEND</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
+
+<script>
+  const allRanges = document.querySelectorAll(".range-wrap");
+allRanges.forEach(wrap => {
+  const range = wrap.querySelector(".range");
+  const bubble = wrap.querySelector(".bubble");
+
+  range.addEventListener("input", () => {
+    setBubble(range, bubble);
+  });
+  setBubble(range, bubble);
+});
+
+function setBubble(range, bubble) {
+  const val = range.value;
+  const min = range.min ? range.min : 0;
+  const max = range.max ? range.max : 100;
+  const newVal = Number(((val - min) * 100) / (max - min));
+  bubble.innerHTML = val;
+
+  // Sorta magic numbers based on size of the native UI thumb
+  bubble.style.left = `calc(${newVal}% + (${8 - newVal * 0.15}px))`;
+}
+</script>

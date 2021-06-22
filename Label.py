@@ -1,14 +1,16 @@
 import csv
-from StockMarketFormations.StockClass import *
+
+import seaborn
+from StockClass import *
 from fastdtw import fastdtw
 from scipy.spatial.distance import euclidean
 import numpy as np
-from StockMarketFormations.Similarity import similarity
-from StockMarketFormations.Identification import identification
-from StockMarketFormations.rulesets import *
+from Similarity import similarity
+from Identification import identification
+from rulesets import *
 import numpy as np
 from operator import attrgetter
-from StockMarketFormations.Placement import *
+from Placement import *
 import pandas as pd
 import os
 
@@ -80,7 +82,6 @@ def createDataFrameObj(stockMarketData):
 	dataFrameDict['Label'] = stockMarketData.label
 	dataFrameDict['Pattern'] = stockMarketData.pattern
 	dataFrameObj = pd.DataFrame(data=dataFrameDict)
-	print(dataFrameObj.columns)
 	return dataFrameObj
 
 def saveLabeledDataToCSV(stockMarketData, filename):
@@ -90,6 +91,7 @@ def saveLabeledDataToCSV(stockMarketData, filename):
 		labeledFileName += fileNamelList[i]
 	if os.path.exists(labeledFileName):
 	    os.remove(labeledFileName)
+	new_filename = filename.split('.')[0]+'_labeled.csv'
 	with open(filename.split('.')[0]+'_labeled.csv', 'w') as f:
 		writer = csv.writer(f)
 		writer.writerow(["CompanyName","StockName","High","Low","Open","Close","Volume","Date","Label","Pattern"])
@@ -104,6 +106,39 @@ def saveLabeledDataToCSV(stockMarketData, filename):
 							stockMarketData.date[i],
 							stockMarketData.label[i],
 							stockMarketData.pattern[i]])
+		print(new_filename ,'saved')
+
+def labelByTwenty(filename):
+	stockMarketDict = readFileAndFillDictionary(filename)
+	for stock in stockMarketDict:
+		stockMarketData = stockMarketDict[stock]
+		stockData = stockMarketData.close
+		similarityList = []
+		for key in formationList:
+			w = 20
+			print('formation: ' + str(key))
+			formation = formationList[key](200)
+			start = 0
+			while start < len(stockData)-w:
+				marketData = getDictionaryData(stockData, start, start+w)
+				if len(marketData) > len(formation):
+					marketDataS, formationS = identification(marketData, formation)
+				else:
+					formationS, marketDataS = identification(formation, marketData)
+				distance = similarity(marketDataS, formationS)
+				similarityList.append(FormationCompare(key, formationLabelNumber[key], start, start+w, distance))
+				start += w
+		similarityList.sort(key=attrgetter('distance'))
+		stockMarketData, _ = greedyPlacementPercentagePriority(stockMarketData, similarityList)
+		saveLabeledDataToCSV(stockMarketData, filename)
+		return createDataFrameObj(stockMarketData)
+
+def getStockNameList(fileList, dir):
+	stocks = []
+	for filepath in fileList:
+		if filepath.__contains__('_labeled'):
+			stocks.append((filepath.split('_')[0], dir + filepath))
+	return stocks
 
 def labelDataAsDataFrameObj(filename):
 	stockMarketDict = readFileAndFillDictionary(filename)
@@ -113,7 +148,7 @@ def labelDataAsDataFrameObj(filename):
 		similarityList = []
 		epoch = 0
 		for key in formationList:
-			w = 10
+			w = 20
 			print('formation: ' + str(key))
 			epochFormation = 0
 			formation = formationList[key](200)
@@ -133,18 +168,48 @@ def labelDataAsDataFrameObj(filename):
 				epoch += 1
 				w += 5
 		similarityList.sort(key=attrgetter('distance'))
-		stockMarketData = greedyPlacementDistancePriority(stockMarketData, similarityList)
+		stockMarketData, _ = greedyPlacementDistancePriority(stockMarketData, similarityList)
 		saveLabeledDataToCSV(stockMarketData, filename)
 		return createDataFrameObj(stockMarketData)
 
+def labelDataAsDataFrameObjForWeb(filename):
+	stockMarketDict = readFileAndFillDictionary(filename)
+	for stock in stockMarketDict:
+		stockMarketData = stockMarketDict[stock]
+		stockData = stockMarketData.close
+		similarityList = []
+		epoch = 0
+		for key in formationList:
+			w = 20
+			print('formation: ' + str(key))
+			epochFormation = 0
+			formation = formationList[key](200)
+			while w < len(stockData):
+				start = 0
+				while start < len(stockData)-w:
+					marketData = getDictionaryData(stockData, start, start+w)
+					if len(marketData) > len(formation):
+						marketDataS, formationS = identification(marketData, formation)
+					else:
+						formationS, marketDataS = identification(formation, marketData)
+					distance = similarity(marketDataS, formationS)
+					similarityList.append(FormationCompare(key, formationLabelNumber[key], start, start+w, distance))
+					start += 10
+				epoch += 1
+				w += 10
+		similarityList.sort(key=attrgetter('distance'))
+		stockMarketData, log = greedyPlacementDistancePriority(stockMarketData, similarityList)
+		saveLabeledDataToCSV(stockMarketData, filename)
+		return createDataFrameObj(stockMarketData), log
+
 def main():
-	stockMarketDict = readFileAndFillDictionary('../datasets/CAC40/Veolia.csv')
+	stockMarketDict = readFileAndFillDictionary('dataset_CAC40/Crédit Agricole.csv')
 	for stock in stockMarketDict:
 		stockMarketData = stockMarketDict[stock]
 		stockData = stockMarketData.close
 		similarityList = []
 		for key in formationList:
-			w = 10
+			w = 20
 			while w < len(stockData):
 				start = 0
 				while start < len(stockData)-w:
@@ -155,14 +220,14 @@ def main():
 					else:
 						formationS, marketDataS = identification(formation, marketData)
 					distance = similarity(marketDataS, formationS)
-					similarityList.append(FormationCompare(key, start, start+w, distance))
-					start += 1
-				w += 5
+					similarityList.append(FormationCompare(key, formationLabelNumber[key], start, start+w, distance))
+					start += 5
+				w += 20
 		similarityList.sort(key=attrgetter('distance'))
-		# for item in similarityList:
-		# 	print(item)
-		stockMarketData = greedyPlacementDistancePriority(stockMarketData, similarityList)
-		stockMarketData = greedyPlacementPercentagePriority(stockMarketData, similarityList)
+		for item in similarityList:
+			print(item)
+		stockMarketData, _ = greedyPlacementDistancePriority(stockMarketData, similarityList)
+		stockMarketData, _ = greedyPlacementPercentagePriority(stockMarketData, similarityList)
 		# for i in range(len(stockMarketData.label)):
 		# 	print("index: " + str(i) + " label: " + str(stockMarketData.label[i]))
 

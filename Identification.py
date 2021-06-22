@@ -42,7 +42,6 @@ def identification(P, Q): #marketdata P formation Q
 
 def maxAdjPoints(P, n):
     adjPointList = []
-    # maxAdjPointsRec(P,n-2,0,0,len(P)-1,adjPointList)
     p1 = point(0,P[0])
     p2 = point(len(P)-1, P[-1])
     for i in range(1, len(P)-2):
@@ -70,24 +69,6 @@ def slopeXcYc(p1, p2, p3):
     xc = ((p3.x + s*p3.y + s*s*p2.x - s*p2.y) / (1 + s*s)) - (p3.x*p3.x)
     yc = s*xc - s*p2.x + p2.y
     return s, xc, yc
-
-def maxAdjPointsRec(P, n, counter, left, right, SP):
-    adjPointList = []
-    if counter > n:
-        return
-    print('n: ' + str(n) + ' counter: ' + str(counter) + ' left:' + str(left) + ' right: ' + str(right))
-    p1 = point(left,P[left])
-    p2 = point(right, P[right])
-    for i in range(left, right):
-        p3 = point(i,P[i])
-        distance = w1*editDistance(p3, p1, p2) + w2*perpendicularDistance(p3, p1, p2) + w3*verticalDistance(p3, p1, p2)
-        # distance = w1*editDistance(p3, p1, p2) + (1-w1)*verticalDistance(p3, p1, p2)
-        adjPointList.append(adjPoint(i, distance))
-    adjPointList.sort(key=attrgetter('distance'), reverse=True)
-    if adjPointList:
-        SP.append(adjPointList[0])
-        maxAdjPointsRec(P,n,2*counter+1,left,adjPointList[0].index,SP)
-        maxAdjPointsRec(P,n,2*counter+2,adjPointList[0].index,right,SP)
 
 if __name__ == '__main__':
     P = [2,3,5,6,10,12,15,14,12,9,8,6,4,7,10,13,16,12,10,5]
